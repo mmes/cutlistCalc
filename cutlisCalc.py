@@ -5,6 +5,8 @@ import os
 stockLength = float(sys.argv[1])
 transLength = float(sys.argv[2])
 csvFile = sys.argv[3]
+useMaxLegths = sys.argv[4] == "true"
+
 outDir = os.path.dirname(os.path.abspath(csvFile))
 outFile = os.path.join(outDir,"cutlist.csv")
 
@@ -35,13 +37,22 @@ while needSplits:
     cutLengths.sort()
     needSplits = False
 
-    while cutLengths[-1] > stockLength:
-        tooLong = cutLengths[-1]
-        cutLengths.pop()
-        cutLengths.append(tooLong / 2)
-        cutLengths.append(tooLong / 2)
-        print("Lenth " + str(tooLong) + " is too long so I cut it in half")
-        needSplits = True
+    while cutLengths[-1] > transLength:
+            tooLong = cutLengths[-1]
+            cutLengths.pop()
+
+            if(useMaxLegths):
+                cutLengths.append(transLength)
+                cutLengths.append(tooLong - transLength)
+                print("Splitting " + str(tooLong) + " into " + str(transLength) + " and " + str(tooLong - transLength))
+                needSplits = True
+                # break
+            else:
+                cutLengths.append(tooLong / 2)
+                cutLengths.append(tooLong / 2)
+                print("Lenth " + str(tooLong) + " is too long so I cut it in half")
+                needSplits = True
+                # break
       
 cutLengths.sort(reverse = True)
 
