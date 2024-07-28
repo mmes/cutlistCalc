@@ -12,7 +12,7 @@ outFile = os.path.join(outDir,"cutlist.csv")
 
 print("Generating cutlist from: " + csvFile);
 print("Using stock length: " + str(stockLength));
-print("Max transport length: " + str(stockLength));
+print("Max transport length: " + str(transLength));
 
 lengthColIndex = 0
 foundLength = False
@@ -67,6 +67,7 @@ didCut = True
 offcut = 0
 total = 0
 leftover = 0
+stackup = 0
 
 while didCut:
     didCut = False
@@ -76,6 +77,15 @@ while didCut:
             cutRow["part length"] = l
             cutRow["stock ID"] = stockId
             cutRow["offset"] = stockLength - stock + l
+
+            stackup += l
+            
+            if(stackup >= transLength):
+                cutRow["transport cut"] = True
+                stackup = 0
+            else:
+                cutRow["transport cut"] = False
+            
             stock = stock - l
             total += l
             del cutLengths[idx]
@@ -103,7 +113,7 @@ print("Output: " + str(outFile))
 
 
 with open(outFile, 'w', newline='') as csvfile:
-    rowNames = ["part length", "stock ID", "offset"]
+    rowNames = ["part length", "stock ID", "offset", "transport cut"]
     writer = csv.DictWriter(csvfile, fieldnames=rowNames)
     writer.writeheader()
     writer.writerows(outCuts)
