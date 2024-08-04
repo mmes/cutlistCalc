@@ -25,13 +25,13 @@ with open(csvFile, mode ='r')as file:
   for row in csvData:
         if not foundColumns:
            try:
-               partIdColIndex = row.index("part index")
-               lengthColIndex = row.index("length")
+               partIdColIndex = row.index("section")
+               lengthColIndex = row.index("round up")
                foundColumns = True
            except ValueError:
-               print("Expected a row titled 'length'")
+               print("Expected a row titled 'section' and 'round up'")
         else:
-            cutLengths.append((row[partIdColIndex], float(row[lengthColIndex])))
+            cutLengths.append((int(row[partIdColIndex]), float(row[lengthColIndex])))
 
 needSplits = True
 
@@ -47,15 +47,15 @@ while needSplits:
             if(useMaxLegths):
                 cutLengths.append((pId, transLength))
                 cutLengths.append((pId, tooLong - transLength))
-                print("Splitting " + str(tooLong) + " into " + str(transLength) + " and " + str(tooLong - transLength))
+                print("Splitting part ID " + str(pId) + " with lengh " + str(tooLong) + " into " + str(transLength) + " and " + str(tooLong - transLength))
                 needSplits = True
-                # break
+                break
             else:
                 cutLengths.append((pId, tooLong / 2))
                 cutLengths.append((pId, tooLong / 2))
                 print("Lenth " + str(tooLong) + " is too long so I cut it in half")
                 needSplits = True
-                # break
+                break
       
 cutLengths.sort(reverse = True, key=lambda x: x[1])
 
@@ -96,15 +96,16 @@ while didCut:
             
             stock = stock - l
             total += l
-            del cutLengths[idx]
+            cutLengths.pop(idx)
             didCut = True
             break
     
     if(didCut):
+        outCuts.append(cutRow)
+        
         if len(cutLengths) == 0:
             leftover = stock
         else:
-            outCuts.append(cutRow)
             cutRow = {}
     
     if(didCut == False and len(cutLengths) > 0):
@@ -119,6 +120,7 @@ print("Total Cut: " + str(total))
 print("Leftover: " + str(leftover))
 print("Output: " + str(outFile))
 
+outCuts.sort(key=lambda x: x["part ID"])
 
 with open(outFile, 'w', newline='') as csvfile:
     rowNames = ["part ID", "part length", "stock ID", "offset", "transport cut"]
